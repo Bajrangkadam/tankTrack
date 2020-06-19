@@ -40,19 +40,19 @@ let userLogin = reqBody => new Promise((resolve, reject) => {
 });
 
 let userExists = empId => new Promise((resolve, reject) => {
-  if (reqBody.empId == "") {
+  if (empId == "") {
     return reject({
       code: 400,
       message: "EmpId is empty."
     });
   } else {
-    var sql = `select id,empId,name, emailId, phoneNumber from registration where id='${reqBody.id}' and isActive =1`;
+    var sql = `select id,empId,name, emailId, phoneNumber,totalLeave from registration where id=${empId} and isActive =1`;
     dbQuery.queryRunner(sql)
       .then(result => {
         if (result && result.length == 0) {
           reject({
             code: 400,
-            message: "No data found.",
+            message: "User not exists.",
             data : []
           });
         } else {
