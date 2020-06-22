@@ -64,6 +64,26 @@ app.post('/checkout', (req, res) => {
     });
 });
 
+app.get('/getAllAttendanceData', (req, res) => {
+  attendance.getAllAttendanceData()
+    .then(result => {
+      res.status(200).send(result);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
+});
+
+app.get('/getAttendanceBasedOnId/:id', (req, res) => {
+  attendance.getAttendanceBasedOnId(req.params.id)
+    .then(result => {
+      res.status(200).send(result);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
+});
+
 app.post('/leaveRequest', (req, res) => {
   leave.leaveRequest(req.body)
     .then(result => {

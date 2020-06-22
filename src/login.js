@@ -7,7 +7,9 @@ let userLogin = reqBody => new Promise((resolve, reject) => {
       message: "Please enter userName and Password."
     });
   } else {
-    var sql = `select id,empId,name, emailId, phoneNumber from registration where empId='${reqBody.userName}' and password ='${reqBody.password}'`;
+    var sql = `select em.* from registration rg
+    Join emp_master em on rg.empid=em.id and em.isActive =1 and em.isRegister=1
+     and em.empId='${reqBody.userName}' and rg.password ='${reqBody.password}'`;
     var dbResult = "";
     dbQuery.queryRunner(sql)
       .then(result => {
@@ -46,14 +48,14 @@ let userExists = empId => new Promise((resolve, reject) => {
       message: "EmpId is empty."
     });
   } else {
-    var sql = `select id,empId,name, emailId, phoneNumber,totalLeave from registration where id=${empId} and isActive =1`;
+    var sql = `select em.* from registration rg Join emp_master em on rg.empid=em.id where rg.empid=${empId} and em.isActive =1`;
     dbQuery.queryRunner(sql)
       .then(result => {
         if (result && result.length == 0) {
           reject({
             code: 400,
             message: "User not exists.",
-            data : []
+            data: []
           });
         } else {
           resolve({

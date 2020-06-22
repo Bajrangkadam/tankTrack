@@ -1,17 +1,26 @@
 let dbQuery = require('../dbConfig/queryRunner');
 let login = require('./login');
 
+let checkBalancedLeave = (leaveCount, totalLeave, result) => new Promise((resolve, reject) => {
+  if (result && result.length == 0) {
+    let balLeave = leaveCount - 1.5;
+    var sql = `INSERT INTO leave_details(leaveType,reason,empId,leaveFromDate,
+      leaveToDate,totalLeave,pendingLeave,statusOfLeave,leaveCount)
+      VALUES('LOP','${reqBody.reason}',${reqBody.id},
+      '${reqBody.leaveFromDate}','${reqBody.leaveToDate}',${empData.totalLeave},${empData.totalLeave - reqBody.leaveCount},'pending',${reqBody.leaveCount})`;
+    return dbQuery.queryRunner(sql);
+  } else {
+
+  }
+});
+
 let verifyLeaveRequest = (reqBody, empData) => new Promise((resolve, reject) => {
   if (reqBody.leaveCount <= empData.totalLeave) {
     let query = `select * from leave_details where empId=${reqBody.id} ORDER BY id DESC LIMIT 1`;
     dbQuery.queryRunner(query)
       .then(result => {
         if (result && result.length == 0) {
-          var sql = `INSERT INTO leave_details(leaveType,reason,empId,leaveFromDate,
-            leaveToDate,totalLeave,pendingLeave,statusOfLeave,leaveCount)
-            VALUES('${LOP}','${reqBody.reason}',${reqBody.id},
-            '${reqBody.leaveFromDate}','${reqBody.leaveToDate}',${empData.totalLeave},${empData.totalLeave - reqBody.leaveCount},'pending',${reqBody.leaveCount})`;
-          return dbQuery.queryRunner(sql);
+          return checkBalancedLeave(reqBody.leaveCount, empData.totalLeave, result);
         } else if (result && result[0].pendingLeave == 0) {
           var sql = `INSERT INTO leave_details(leaveType,reason,empId,leaveFromDate,
             leaveToDate,totalLeave,pendingLeave,statusOfLeave,leaveCount)
@@ -19,12 +28,15 @@ let verifyLeaveRequest = (reqBody, empData) => new Promise((resolve, reject) => 
             '${reqBody.leaveFromDate}','${reqBody.leaveToDate}',${empData.totalLeave},${result[0].pendingLeave - reqBody.leaveCount},'pending',${reqBody.leaveCount})`;
           return dbQuery.queryRunner(sql);
         } else {
+          let lopLeave = reqBody.leaveCount - result[0].pendingLeave
+          console.log("lopLeave------", lopLeave);
           //need to work
-          if (result[0].pendingLeave < reqBody.leaveCount) {
+          if (lopLeave > 0) {
+            console.log("come here-----", lopLeave);
             var sql = `INSERT INTO leave_details(leaveType,reason,empId,leaveFromDate,
               leaveToDate,totalLeave,pendingLeave,statusOfLeave,leaveCount)
               VALUES('${LOP}','${reqBody.reason}',${reqBody.id},
-              '${reqBody.leaveFromDate}','${reqBody.leaveToDate}',${empData.totalLeave},${result[0].pendingLeave - reqBody.leaveCount},'pending',${reqBody.leaveCount})`;
+              '${reqBody.leaveFromDate}','${reqBody.leaveToDate}',${empData.totalLeave},${result[0].pendingLeave - reqBody.leaveCount},'pending',${lopLeave})`;
             return dbQuery.queryRunner(sql);
           } else {
             var sql = `INSERT INTO leave_details(leaveType,reason,empId,leaveFromDate,
