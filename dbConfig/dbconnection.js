@@ -1,7 +1,5 @@
 const mysql = require('mysql')
 let dbconfig = require("../appconfig.json");
-//console.log("ff-", dbconfig.dbConfig);
-
 var connectionPool = mysql.createPool(dbconfig.dbConfig);
 
 module.exports = {

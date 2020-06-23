@@ -22,9 +22,7 @@ process.on("unhandledRejection", (e) => {
 
 app.get('/', (req, res) => res.send('Hello World!'))
 app.post('/test', (req, res) => {
-  console.log("re---", req.body);
-
-  res.send('Hello World! how are you')
+  res.send('Hello World! how are you !!')
 })
 app.post('/registation', (req, res) => {
   registation.userRegister(req.body)

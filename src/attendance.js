@@ -126,7 +126,6 @@ let checkIn = reqBody => new Promise((resolve, reject) => {
           }
         }) */
     .then(result => {
-      console.log("result------<<<>>>>>>>>>", result);
       if (result.code == 200) {
         var sql = `INSERT INTO attendance(checkInDate,checkInTime,isVisit,visitReason,checkInLocation,checkInGeoLocation,comment,isActive,empId)
         VALUES('${reqBody.checkInDate}','${reqBody.checkInTime}','${reqBody.isVisit}','${reqBody.visitReason}','${reqBody.checkInLocation}','${reqBody.checkInGeoLocation}','${reqBody.comment}',${true},${reqBody.id})`;

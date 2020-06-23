@@ -35,19 +35,19 @@ let registerUserExists = empId => new Promise((resolve, reject) => {
       message: "EmpId is empty."
     });
   } else {
-    var sql = `select em.* from registration rg right Join emp_master em on rg.empid=em.id where em.id=${empId} and em.isActive =1 and em.isRegister = 0`;
+    var sql = `select em.* from registration rg right Join emp_master em on rg.empid=em.id where em.id=${empId} and em.isActive =1 and em.isRegister = 1`;
     dbQuery.queryRunner(sql)
       .then(result => {
-        if (result && result.length == 0) {
+        if (result && result.length != 0) {
           reject({
             code: 400,
-            message: "User already exists.",
+            message: "User already register.",
             data: []
           });
         } else {
           resolve({
             code: 200,
-            message: "Data found.",
+            message: "Data not register.",
             data: result
           });
         }
@@ -62,8 +62,10 @@ let registerUserExists = empId => new Promise((resolve, reject) => {
 });
 
 let userRegister = (reqBody) => new Promise((resolve, reject) => {
+  let userData = "";
   checkUserExists(reqBody.empId)
     .then(result => {
+      userData = result;
       if (result.code == 200) {
         return registerUserExists(result.data[0].id);
       } else {
@@ -72,8 +74,8 @@ let userRegister = (reqBody) => new Promise((resolve, reject) => {
     })
     .then(result => {
       if (result.code == 200) {
-        var sql = `INSERT INTO registration(empId,password) VALUES(${result.data[0].id},'${reqBody.password}');`;
-        var updateQry = `update emp_master set isRegister = ${1} where id=${result.data[0].id}`;
+        var sql = `INSERT INTO registration(empId,password) VALUES(${userData.data[0].id},'${reqBody.password}');`;
+        var updateQry = `update emp_master set isRegister = ${1} where id=${userData.data[0].id}`;
         dbQuery.queryRunner(updateQry);
         return dbQuery.queryRunner(sql);
       } else {
@@ -81,18 +83,26 @@ let userRegister = (reqBody) => new Promise((resolve, reject) => {
       }
     })
     .then(result => {
-      if (result && result.insertId) {
-        return login.userExists(result.insertId)
+      if (result && result.insertId != 0) {
+        var sql = `select em.* from registration rg Join emp_master em on rg.empid=em.id where rg.id=${result.insertId} and em.isActive =1 and em.isRegister =1`;
+        return dbQuery.queryRunner(sql);
       } else {
         reject(result);
       }
     })
     .then(result => {
-      if (result && result.code == 200) {
-        result.message = "Account Registered Successfully."
-        resolve(result);
+      if (result && result.length != 0) {
+        resolve({
+          code: 200,
+          message: "Account Registered Successfully.",
+          data: result
+        });
       } else {
-        reject(result);
+        reject({
+          code: 400,
+          message: "Account Not Registered.",
+          data: []
+        });
       }
     })
     .catch(err => {

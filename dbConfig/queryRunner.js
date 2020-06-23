@@ -9,7 +9,7 @@ function queryRunner(qry) {
                 error: 'No Query Found'
             });
         } else {
-            console.log("que--1---", qry);
+            console.log("que-----", qry);
             mysqlConnection.getConnection().then((connection) => {
                 connection.query(qry, (error, results, fields) => {
                     if (error) reject(error);
