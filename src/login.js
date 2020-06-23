@@ -48,7 +48,7 @@ let userExists = empId => new Promise((resolve, reject) => {
       message: "EmpId is empty."
     });
   } else {
-    var sql = `select em.* from registration rg Join emp_master em on rg.empid=em.id where rg.empid=${empId} and em.isActive =1`;
+    var sql = `select em.* from registration rg Join emp_master em on rg.empid=em.id where rg.empid=${empId} and em.isActive =1 and em.isRegister =1`;
     dbQuery.queryRunner(sql)
       .then(result => {
         if (result && result.length == 0) {

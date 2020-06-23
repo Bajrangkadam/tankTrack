@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser');
-//global.moment = require('moment');
+global.moment = require('moment');
 const app = express();
 const port = 3000
 const IPAddress = `127.0.0.1`
@@ -86,6 +86,16 @@ app.get('/getAttendanceBasedOnId/:id', (req, res) => {
 
 app.post('/leaveRequest', (req, res) => {
   leave.leaveRequest(req.body)
+    .then(result => {
+      res.status(200).send(result);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
+});
+
+app.post('/getBalanceLeave', (req, res) => {
+  leave.getBalanceLeave(req.body)
     .then(result => {
       res.status(200).send(result);
     })
