@@ -39,7 +39,7 @@ let getAllAttendanceData = () => new Promise((resolve, reject) => {
           data: result
         });
       } else {
-        let groupByData=_.groupBy(result,'name');
+        let groupByData = _.groupBy(result, 'name');
         resolve({
           code: 200,
           message: "Data fetch successfull.",
@@ -118,13 +118,6 @@ let checkUserIsCheckIn = (empId, checkInId) => new Promise((resolve, reject) => 
 
 let checkIn = reqBody => new Promise((resolve, reject) => {
   login.userExists(reqBody.id)
-    /*     .then(result => {
-          if (result.code == 200) {
-            return checkUserIsCheckout(reqBody.id, reqBody.checkInDate);
-          } else {
-            reject(result);
-          }
-        }) */
     .then(result => {
       if (result.code == 200) {
         var sql = `INSERT INTO attendance(checkInDate,checkInTime,isVisit,visitReason,checkInLocation,checkInGeoLocation,comment,isActive,empId)
@@ -135,10 +128,21 @@ let checkIn = reqBody => new Promise((resolve, reject) => {
       }
     })
     .then(result => {
-      resolve({
-        code: 200,
-        message: "CheckIn succefull."
-      });
+      if (result && result.insertId != 0) {
+        resolve({
+          code: 200,
+          message: "CheckIn succefull.",
+          data: [{
+            checkInId: result.insertId,
+            checkInTime: reqBody.checkInTime,
+            checkInDate: reqBody.checkInDate,
+            checkInLocation: reqBody.checkInLocation,
+            checkInGeoLocation: reqBody.checkInGeoLocation
+          }]
+        });
+      } else {
+        reject(result);
+      }
     })
     .catch(err => {
       reject({
@@ -184,5 +188,5 @@ module.exports = {
   checkIn: checkIn,
   checkOut: checkOut,
   getAllAttendanceData: getAllAttendanceData,
-  getAttendanceBasedOnId : getAttendanceBasedOnId
+  getAttendanceBasedOnId: getAttendanceBasedOnId
 }
