@@ -72,8 +72,8 @@ app.get('/getAllAttendanceData', (req, res) => {
     });
 });
 
-app.get('/getAttendanceBasedOnId/:id', (req, res) => {
-  attendance.getAttendanceBasedOnId(req.params.id)
+app.post('/getAttendanceBasedOnId', (req, res) => {
+  attendance.getAttendanceBasedOnId(req.body.id)
     .then(result => {
       res.status(200).send(result);
     })
@@ -94,6 +94,26 @@ app.post('/leaveRequest', (req, res) => {
 
 app.post('/getBalanceLeave', (req, res) => {
   leave.getBalanceLeave(req.body)
+    .then(result => {
+      res.status(200).send(result);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
+});
+
+app.post('/getEmpLeaveOnRmId', (req, res) => {
+  leave.getEmpLeaveOnRmId(req.body.id)
+    .then(result => {
+      res.status(200).send(result);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
+});
+
+app.post('/leaveApprove', (req, res) => {
+  leave.leaveApprove(req.body)
     .then(result => {
       res.status(200).send(result);
     })

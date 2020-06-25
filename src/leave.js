@@ -1,6 +1,81 @@
 let dbQuery = require('../dbConfig/queryRunner');
 let login = require('./login');
 
+let leaveApprove = reqBody => new Promise((resolve, reject) => {
+  let userData = ''
+  if (reqBody.statusOfLeave.toLowerCase() == 'approve' || reqBody.statusOfLeave.toLowerCase() == 'reject') {
+    let sql = `select * from leave_details where id=${reqBody.id}`;
+    dbQuery.queryRunner(sql)
+      .then(result => {
+        if (result && result.length != 0) {
+          let sql = `update leave_details set statusOfLeave='${reqBody.statusOfLeave}' where id=${reqBody.id}`;
+          return dbQuery.queryRunner(sql)
+        } else {
+          reject(result);
+        }
+      })
+      .then(result => {        
+        if (result && result.insertId == 0) {
+          resolve({
+            code: 200,
+            message: "Leave approve successfully.",
+            data: []
+          });
+        } else {
+          reject(result);
+        }
+      })
+      .catch(err => {
+        reject({
+          code: err.code ? err.code : 500,
+          message: err.message,
+          data: []
+        });
+      });
+  } else {
+    reject({
+      code: 400,
+      message: "Invalid leave type.",
+      data: []
+    });
+  }
+});
+
+let getEmpLeaveOnRmId = id => new Promise((resolve, reject) => {
+  if (id == "") {
+    reject({
+      code: 400,
+      message: "Missing parameter.",
+      data: []
+    });
+  } else {
+    let query = `select ld.id,em.empId,em.name,ld.reason,ld.leaveType,ld.leaveFromDate,ld.leaveToDate,ld.leaveCount,ld.statusOfLeave from leave_details ld
+    join emp_master em on ld.empid=em.id where ld.rmid=${id} and ld.statusOfLeave='pending'`
+    dbQuery.queryRunner(query)
+      .then(result => {
+        if (result && result.length == 0) {
+          reject({
+            code: 400,
+            message: "No data found.",
+            data: []
+          });
+        } else {
+          resolve({
+            code: 200,
+            message: "Data found successfully.",
+            data: result
+          });
+        }
+      })
+      .catch(err => {
+        reject({
+          code: 500,
+          message: err,
+          data: []
+        });
+      })
+  }
+});
 
 let updateEmpMaster = reqBody => new Promise((resolve, reject) => {
   if (reqBody.empId == "") {
@@ -122,10 +197,12 @@ let getBalanceLeave = reqBody => new Promise((resolve, reject) => {
 });
 
 let leaveRequest = reqBody => new Promise((resolve, reject) => {
+  let userData = ''
   if (reqBody.leaveType.toLowerCase() == 'paid' || reqBody.leaveType.toLowerCase() == 'compoff') {
     login.userExists(reqBody.id)
       .then(result => {
         if (result.code == 200) {
+          userData = result.data;
           return updateEmpMaster(reqBody);
         } else {
           reject(result);
@@ -134,29 +211,31 @@ let leaveRequest = reqBody => new Promise((resolve, reject) => {
       .then(result => {
         if (result && result.code == 200) {
           var sql = `INSERT INTO leave_details(leaveType,reason,empId,leaveFromDate,
-            leaveToDate,statusOfLeave,leaveCount,altNumber)
+            leaveToDate,statusOfLeave,leaveCount,altNumber,rmId)
             VALUES('${reqBody.leaveType}','${reqBody.reason}',${reqBody.id},
-            '${reqBody.leaveFromDate}','${reqBody.leaveToDate}','pending',${reqBody.leaveCount},'${reqBody.altNumber}')`;
+            '${reqBody.leaveFromDate}','${reqBody.leaveToDate}','pending',
+            ${reqBody.leaveCount},'${reqBody.altNumber}',${userData[0].rm})`;
           return dbQuery.queryRunner(sql);
         } else {
           reject(result);
         }
       })
-      .then(result =>{
+      .then(result => {
         if (result && result.insertId !== 0) {
           resolve({
             code: 200,
             message: "Leave applied successfully.",
             data: []
           });
-        }else{
+        } else {
           reject(result);
         }
       })
       .catch(err => {
         reject({
           code: err.code ? err.code : 500,
-          message: err.message
+          message: err.message,
+          data: []
         });
       });
   } else {
@@ -170,5 +249,7 @@ let leaveRequest = reqBody => new Promise((resolve, reject) => {
 
 module.exports = {
   leaveRequest: leaveRequest,
-  getBalanceLeave: getBalanceLeave
+  getBalanceLeave: getBalanceLeave,
+  getEmpLeaveOnRmId: getEmpLeaveOnRmId,
+  leaveApprove: leaveApprove
 }
