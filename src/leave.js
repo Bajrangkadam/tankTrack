@@ -166,7 +166,7 @@ let getBalanceLeave = reqBody => new Promise((resolve, reject) => {
       data: []
     });
   } else {
-    let query = '',month= new Date().getMonth + 1
+    let query = '',month= new Date().getMonth() + 1
     if (reqBody.leavTpe.toLowerCase() == 'paid') {
       query = `select paid from leave_emp_master where empid=${reqBody.empId} and month=${month}`;
     } else if (reqBody.leavTpe.toLowerCase() == 'compoff') {
