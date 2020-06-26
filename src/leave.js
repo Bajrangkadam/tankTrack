@@ -14,7 +14,7 @@ let leaveApprove = reqBody => new Promise((resolve, reject) => {
           reject(result);
         }
       })
-      .then(result => {        
+      .then(result => {
         if (result && result.insertId == 0) {
           resolve({
             code: 200,
@@ -100,7 +100,11 @@ let updateEmpMaster = reqBody => new Promise((resolve, reject) => {
           let query = '';
           if (reqBody.leaveType.toLowerCase() == 'paid') {
             if (result && result[0].paid >= reqBody.leaveCount) {
-              query = `UPDATE leave_emp_master SET paid=${result[0].paid - reqBody.leaveCount} where empid=${reqBody.id} and month=${month}`;
+              const date1 = new Date(reqBody.leaveFromDate);
+              const date2 = new Date(reqBody.leaveToDate);
+              const diffTime = Math.abs(date2 - date1);
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              query = `UPDATE leave_emp_master SET paid=${result[0].paid - diffDays} where empid=${reqBody.id} and month=${month}`;
               return dbQuery.queryRunner(query);
             } else {
               reject({
@@ -111,7 +115,11 @@ let updateEmpMaster = reqBody => new Promise((resolve, reject) => {
             }
           } else if (reqBody.leaveType.toLowerCase() == 'compoff') {
             if (result && result[0].comp_off >= reqBody.leaveCount) {
-              query = `UPDATE leave_emp_master SET comp_off=${result[0].comp_off - reqBody.leaveCount} where empid=${reqBody.id} and month=${month}`;
+              const date1 = new Date(reqBody.leaveFromDate);
+              const date2 = new Date(reqBody.leaveToDate);
+              const diffTime = Math.abs(date2 - date1);
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              query = `UPDATE leave_emp_master SET comp_off=${result[0].comp_off - diffDays} where empid=${reqBody.id} and month=${month}`;
               return dbQuery.queryRunner(query);
             } else {
               reject({
@@ -158,11 +166,11 @@ let getBalanceLeave = reqBody => new Promise((resolve, reject) => {
       data: []
     });
   } else {
-    let query = ''
+    let query = '',month= new Date().getMonth + 1
     if (reqBody.leavTpe.toLowerCase() == 'paid') {
-      query = `select paid from leave_emp_master where paid=${reqBody.leavTpe} and empid=${reqBody.empId}`;
+      query = `select paid from leave_emp_master where empid=${reqBody.empId} and month=${month}`;
     } else if (reqBody.leavTpe.toLowerCase() == 'compoff') {
-      query = `select comp_off from leave_emp_master where comp_off=${reqBody.leavTpe} and empid=${reqBody.empId}`;
+      query = `select comp_off from leave_emp_master where empid=${reqBody.empId} and month=${month}`;
     } else {
       reject({
         code: 400,
